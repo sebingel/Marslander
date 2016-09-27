@@ -76,66 +76,71 @@ internal class Player
                 }
             }
 
-            int angle = 0;
+            int angle;
             int thrust;
 
-            int distToLeftBoundary = Math.Abs(marslanderX - closestFlatSurfaceArea.Item1.X + 20);
-            int distToRightBoundary = Math.Abs(marslanderX - closestFlatSurfaceArea.Item2.X - 20);
+            int leftBoundary = closestFlatSurfaceArea.Item1.X + 250;
+            int rightBoundary = closestFlatSurfaceArea.Item2.X - 250;
+            int surface = closestFlatSurfaceArea.Item1.Y;
+
+            int distToLeftBoundary = Math.Abs(marslanderX - leftBoundary);
+            int distToRightBoundary = Math.Abs(marslanderX - rightBoundary);
+            int distToSurface = Math.Abs(marslanderY - surface);
+
+            int ticksToLand = -1;
+            if (vSpeed != 0)
+                ticksToLand = distToSurface / Math.Abs(vSpeed);
+
+            int ticksToRightBoundary = -1;
+            int ticksToLeftBoundary = -1;
+            if (Math.Abs(hSpeed) > 0)
+            {
+                ticksToRightBoundary = distToRightBoundary / Math.Abs(hSpeed);
+                ticksToLeftBoundary = distToLeftBoundary / Math.Abs(hSpeed);
+            }
 
             if (closestFlatSurfaceArea.Item1.X > marslanderX)
             {
                 // we need to go right
-                int ticksToTarget = distToRightBoundary;
-                if (hSpeed > 0)
-                    ticksToTarget = distToRightBoundary / hSpeed;
+                thrust = 4;
 
-                if (hSpeed > ticksToTarget * 2)
+                // if we go down too fast
+                if (ticksToLeftBoundary > ticksToLand &&
+                    hSpeed > 20)
+                    angle = 0;
+                else if (ticksToRightBoundary != -1 &&
+                         Math.Abs(hSpeed) > ticksToRightBoundary * 2)
                     angle = 45;
                 else
                     angle = -45;
-
-                thrust = 4;
             }
             else if (closestFlatSurfaceArea.Item2.X < marslanderX)
             {
                 // we need to go left
-                int ticksToTarget = distToLeftBoundary;
-                if (Math.Abs(hSpeed) > 0)
-                    ticksToTarget = distToLeftBoundary / Math.Abs(hSpeed);
+                thrust = 4;
 
-                if (Math.Abs(hSpeed) > ticksToTarget * 2)
+                // if we go down to fast
+                if (ticksToRightBoundary > ticksToLand &&
+                    hSpeed < -20)
+                    angle = 0;
+                else if (ticksToLeftBoundary != -1 &&
+                         Math.Abs(hSpeed) > ticksToLeftBoundary * 2)
                     angle = -45;
                 else
                     angle = 45;
-
-                thrust = 4;
             }
             else
             {
                 // we need to get down
-                int distToSurface = marslanderY - closestFlatSurfaceArea.Item1.Y;
-                
-                int ticksToLand = int.MaxValue;
-                if (vSpeed != 0)
-                    ticksToLand = distToSurface / Math.Abs(vSpeed);
-
-                int ticksToLeftBoundary = int.MaxValue;
-                if (hSpeed < 0)
-                    ticksToLeftBoundary = distToLeftBoundary / Math.Abs(hSpeed);
-
-                int ticksToRightBoundary = int.MaxValue;
-                if (hSpeed > 0)
-                    ticksToRightBoundary = distToRightBoundary / Math.Abs(hSpeed);
-
                 if (hSpeed > 0 &&
-                    (hSpeed > ticksToRightBoundary * 2 || hSpeed > 20) &&
+                    (hSpeed > ticksToRightBoundary || hSpeed > 20 || marslanderX > rightBoundary) &&
                     ticksToLand > 3)
                 {
                     angle = 45;
                     thrust = 4;
                 }
                 else if (hSpeed < 0 &&
-                         (Math.Abs(hSpeed) > ticksToLeftBoundary * 2 || hSpeed < -20) &&
+                         (Math.Abs(hSpeed) > ticksToLeftBoundary || Math.Abs(hSpeed) > 20 || marslanderX < leftBoundary) &&
                          ticksToLand > 3)
                 {
                     angle = -45;
@@ -143,6 +148,7 @@ internal class Player
                 }
                 else
                 {
+                    angle = 0;
                     if (Math.Abs(vSpeed) > ticksToLand)
                         thrust = 4;
                     else
