@@ -1,47 +1,104 @@
 ﻿using System;
-using System.Linq;
-using System.IO;
-using System.Text;
-using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 
-class Player
+internal class Player
 {
-    static void Main(string[] args)
+    private static void Main()
     {
         string[] inputs;
-        int surfaceN = int.Parse(Console.ReadLine()); // the number of points used to draw the surface of Mars.
-        for (int i = 0; i < surfaceN; i++)
+
+        int surfacePointCount = int.Parse(Console.ReadLine()); // the number of points used to draw the surface of Mars.
+
+        List<Point> surfacePoints = new List<Point>();
+        while (surfacePointCount-- > 0)
         {
             inputs = Console.ReadLine().Split(' ');
-            int landX = int.Parse(inputs[0]); // X coordinate of a surface point. (0 to 6999)
-            int landY = int.Parse(inputs[1]); // Y coordinate of a surface point. By linking all the points together in a sequential fashion, you form the surface of Mars.
+            surfacePoints.Add(new Point(int.Parse(inputs[0]), int.Parse(inputs[1])));
         }
+
+        Tuple<Point, Point> closestFlatSurfaceArea = null;
 
         // game loop
         while (true)
         {
             inputs = Console.ReadLine().Split(' ');
-            int X = int.Parse(inputs[0]);
-            int Y = int.Parse(inputs[1]);
+            int marslanderX = int.Parse(inputs[0]);
+            int marslanderY = int.Parse(inputs[1]);
             int hSpeed = int.Parse(inputs[2]); // the horizontal speed (in m/s), can be negative.
             int vSpeed = int.Parse(inputs[3]); // the vertical speed (in m/s), can be negative.
             int fuel = int.Parse(inputs[4]); // the quantity of remaining fuel in liters.
             int rotate = int.Parse(inputs[5]); // the rotation angle in degrees (-90 to 90).
             int power = int.Parse(inputs[6]); // the thrust power (0 to 4).
 
-            // Write an action using Console.WriteLine()
-            // To debug: Console.Error.WriteLine("Debug messages...");
+            if (closestFlatSurfaceArea == null)
+            {
+                // Get all flat surface areas
+                List<Tuple<Point, Point>> flatSurfaceAreas = new List<Tuple<Point, Point>>();
 
-            int p = 3;
+                for (int i = 0; i < surfacePoints.Count - 1; i++)
+                {
+                    if (surfacePoints[i].Y == surfacePoints[i + 1].Y)
+                        flatSurfaceAreas.Add(Tuple.Create(surfacePoints[i], surfacePoints[i + 1]));
+                }
 
-            if (vSpeed < -35)
-                p = 4;
-            if (vSpeed > -35)
-                p = 0;
+                // Get closest flat surface area
+                int dist = Int32.MaxValue;
+                foreach (Tuple<Point, Point> flatSurfaceArea in flatSurfaceAreas)
+                {
+                    // check if marslander is above a surface area
+                    if (flatSurfaceArea.Item1.X < marslanderX &&
+                        flatSurfaceArea.Item2.X > marslanderX)
+                    {
+                        closestFlatSurfaceArea = flatSurfaceArea;
+                        break;
+                    }
+
+                    if (flatSurfaceArea.Item1.X > marslanderX)
+                    {
+                        int currentDist = flatSurfaceArea.Item1.X - marslanderX;
+                        if (currentDist < dist)
+                        {
+                            dist = currentDist;
+                            closestFlatSurfaceArea = flatSurfaceArea;
+                        }
+                    }
+
+                    if (flatSurfaceArea.Item2.X < marslanderX)
+                    {
+                        int currentDist = marslanderX - flatSurfaceArea.Item2.X;
+                        if (currentDist < dist)
+                        {
+                            dist = currentDist;
+                            closestFlatSurfaceArea = flatSurfaceArea;
+                        }
+                    }
+                }
+            }
+
+            int angle = 0;
+            int thrust = 0;
+
+            if (closestFlatSurfaceArea.Item1.X > marslanderX)
+            {
+                // we need to go right
+            }
+            else if (closestFlatSurfaceArea.Item2.X < marslanderX)
+            {
+                // we need to go left
+            }
+            else
+            {
+                // we need to get down
+
+                if (vSpeed < -35)
+                    thrust = 4;
+                if (vSpeed > -35)
+                    thrust = 0;
+            }
 
             // 2 integers: rotate power. rotate is the desired rotation angle (should be 0 for level 1), power is the desired thrust power (0 to 4).
-            Console.WriteLine($"0 {p}");
+            Console.WriteLine($"{angle} {thrust}");
         }
     }
 }
