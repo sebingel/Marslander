@@ -76,7 +76,7 @@ internal class Player
                 }
             }
 
-            int angle;
+            int angle = 0;
             int thrust;
 
             if (closestFlatSurfaceArea.Item1.X > marslanderX)
@@ -87,7 +87,7 @@ internal class Player
                 if (hSpeed > 0)
                     ticksToTarget = dist / hSpeed;
 
-                if (hSpeed > ticksToTarget * 4)
+                if (hSpeed > ticksToTarget * 2)
                     angle = 45;
                 else
                     angle = -45;
@@ -102,7 +102,7 @@ internal class Player
                 if (Math.Abs(hSpeed) > 0)
                     ticksToTarget = dist / Math.Abs(hSpeed);
 
-                if (Math.Abs(hSpeed) > ticksToTarget * 4)
+                if (Math.Abs(hSpeed) > ticksToTarget * 2)
                     angle = -45;
                 else
                     angle = 45;
@@ -112,26 +112,45 @@ internal class Player
             else
             {
                 // we need to get down
-                int dist = marslanderY - closestFlatSurfaceArea.Item1.Y;
-                int ticksToLand = dist;
-                if (vSpeed != 0)
-                    ticksToLand = dist / Math.Abs(vSpeed);
+                int distToSurface = marslanderY - closestFlatSurfaceArea.Item1.Y;
+                int distToLeftBoundary = Math.Abs(marslanderX - closestFlatSurfaceArea.Item1.X + 10);
+                int distToRightBoundary = Math.Abs(marslanderX - closestFlatSurfaceArea.Item2.X - 10);
 
-                if (Math.Abs(vSpeed) > ticksToLand)
-                    thrust = 4;
-                else
-                    thrust = 0;
+                int ticksToLand = int.MaxValue;
+                if (vSpeed != 0)
+                    ticksToLand = distToSurface / Math.Abs(vSpeed);
+
+                int ticksToLeftBoundary = int.MaxValue;
+                if (hSpeed < 0)
+                    ticksToLeftBoundary = distToLeftBoundary / Math.Abs(hSpeed);
+
+                int ticksToRightBoundary = int.MaxValue;
+                if (hSpeed > 0)
+                    ticksToRightBoundary = distToRightBoundary / Math.Abs(hSpeed);
 
                 if (hSpeed > 0 &&
+                    (hSpeed > ticksToRightBoundary /** 2*/ || hSpeed > 20) &&
                     ticksToLand > 3)
-                    angle = 10;
+                {
+                    angle = 45;
+                    thrust = 4;
+                }
                 else if (hSpeed < 0 &&
+                         (Math.Abs(hSpeed) > ticksToLeftBoundary /** 2*/ || hSpeed < -20) &&
                          ticksToLand > 3)
-                    angle = -10;
+                {
+                    angle = -45;
+                    thrust = 4;
+                }
                 else
-                    angle = 0;
+                {
+                    if (Math.Abs(vSpeed) > ticksToLand)
+                        thrust = 4;
+                    else
+                        thrust = 3;
+                }
             }
-            
+
             Console.WriteLine($"{angle} {thrust}");
         }
     }
