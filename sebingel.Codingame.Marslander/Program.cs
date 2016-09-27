@@ -76,28 +76,62 @@ internal class Player
                 }
             }
 
-            int angle = 0;
-            int thrust = 0;
+            int angle;
+            int thrust;
 
             if (closestFlatSurfaceArea.Item1.X > marslanderX)
             {
                 // we need to go right
+                int dist = closestFlatSurfaceArea.Item1.X - marslanderX;
+                int ticksToTarget = dist;
+                if (hSpeed > 0)
+                    ticksToTarget = dist / hSpeed;
+
+                if (hSpeed > ticksToTarget * 4)
+                    angle = 45;
+                else
+                    angle = -45;
+
+                thrust = 4;
             }
             else if (closestFlatSurfaceArea.Item2.X < marslanderX)
             {
                 // we need to go left
+                int dist = marslanderX - closestFlatSurfaceArea.Item1.X;
+                int ticksToTarget = dist;
+                if (Math.Abs(hSpeed) > 0)
+                    ticksToTarget = dist / Math.Abs(hSpeed);
+
+                if (Math.Abs(hSpeed) > ticksToTarget * 4)
+                    angle = -45;
+                else
+                    angle = 45;
+
+                thrust = 4;
             }
             else
             {
                 // we need to get down
+                int dist = marslanderY - closestFlatSurfaceArea.Item1.Y;
+                int ticksToLand = dist;
+                if (vSpeed != 0)
+                    ticksToLand = dist / Math.Abs(vSpeed);
 
-                if (vSpeed < -35)
+                if (Math.Abs(vSpeed) > ticksToLand)
                     thrust = 4;
-                if (vSpeed > -35)
+                else
                     thrust = 0;
-            }
 
-            // 2 integers: rotate power. rotate is the desired rotation angle (should be 0 for level 1), power is the desired thrust power (0 to 4).
+                if (hSpeed > 0 &&
+                    ticksToLand > 3)
+                    angle = 10;
+                else if (hSpeed < 0 &&
+                         ticksToLand > 3)
+                    angle = -10;
+                else
+                    angle = 0;
+            }
+            
             Console.WriteLine($"{angle} {thrust}");
         }
     }
