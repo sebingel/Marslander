@@ -82,14 +82,21 @@ internal class Player
             int leftBoundary = closestFlatSurfaceArea.Item1.X + 250;
             int rightBoundary = closestFlatSurfaceArea.Item2.X - 250;
             int surface = closestFlatSurfaceArea.Item1.Y;
+            int targetY = surface + 100;
 
             int distToLeftBoundary = Math.Abs(marslanderX - leftBoundary);
             int distToRightBoundary = Math.Abs(marslanderX - rightBoundary);
             int distToSurface = Math.Abs(marslanderY - surface);
+            Console.Error.WriteLine(distToSurface.ToString());
+            int distToTargetY = Math.Abs(marslanderY - targetY);
 
             int ticksToLand = -1;
+            int ticksTotargetY = -1;
             if (vSpeed != 0)
+            {
                 ticksToLand = distToSurface / Math.Abs(vSpeed);
+                ticksTotargetY = distToTargetY / Math.Abs(vSpeed);
+            }
 
             int ticksToRightBoundary = -1;
             int ticksToLeftBoundary = -1;
@@ -109,7 +116,8 @@ internal class Player
                     hSpeed > 20)
                     angle = 0;
                 else if (ticksToRightBoundary != -1 &&
-                         Math.Abs(hSpeed) > ticksToRightBoundary * 2)
+                         (Math.Abs(hSpeed) > ticksToRightBoundary * 2) ||
+                         (ticksToLeftBoundary * 2 < Math.Abs(hSpeed) + 20 && distToSurface < 500))
                     angle = 45;
                 else
                     angle = -45;
@@ -124,7 +132,8 @@ internal class Player
                     hSpeed < -20)
                     angle = 0;
                 else if (ticksToLeftBoundary != -1 &&
-                         Math.Abs(hSpeed) > ticksToLeftBoundary * 2)
+                         (Math.Abs(hSpeed) > ticksToLeftBoundary * 2) ||
+                         (ticksToRightBoundary * 2 < Math.Abs(hSpeed) + 20 && distToSurface < 500))
                     angle = -45;
                 else
                     angle = 45;
